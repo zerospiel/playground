@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package pg.v1;
+
+import "validate/validate.proto";
+import "google/api/annotations.proto";
+
+option go_package = "github.com/zerospiel/playground/generatedpb;generatedv1";
+
+service StringsService {
+    rpc ToUpper(ToUpperRequest) returns (ToUpperResponse) {
+        option (google.api.http) = {
+            get: "/strings/upper/{s}"
+            additional_bindings { post: "/strings/upper" body: "*" }
+        };
+    }
+}
+
+enum FooEnum {
+    FOO_ENUM_UNSPECIFIED = 0;
+    FOO_ENUM_BAR = 1;
+}
+
+message ToUpperRequest {
+    string s = 1 [(validate.rules).string.len = 5];
+    FooEnum f = 2;
+}
+
+message ToUpperResponse {
+    string s = 1;
+}
+
+message NoopMsg {
+    validate.Int32Rules f = 1;
+}
