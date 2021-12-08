@@ -11,6 +11,7 @@ import (
 	"net/mail"
 	"net/url"
 	"regexp"
+	"sort"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -31,28 +32,67 @@ var (
 	_ = (*url.URL)(nil)
 	_ = (*mail.Address)(nil)
 	_ = anypb.Any{}
+	_ = sort.Sort
 )
 
 // Validate checks the field values on ToUpperRequest with the rules defined in
-// the proto definition for this message. If any rules are violated, an error
-// is returned.
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
 func (m *ToUpperRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ToUpperRequest with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in ToUpperRequestMultiError,
+// or nil if none found.
+func (m *ToUpperRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ToUpperRequest) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
 
+	var errors []error
+
 	if utf8.RuneCountInString(m.GetS()) != 5 {
-		return ToUpperRequestValidationError{
+		err := ToUpperRequestValidationError{
 			field:  "S",
 			reason: "value length must be 5 runes",
 		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
 
 	}
 
 	// no validation rules for F
 
+	if len(errors) > 0 {
+		return ToUpperRequestMultiError(errors)
+	}
 	return nil
 }
+
+// ToUpperRequestMultiError is an error wrapping multiple validation errors
+// returned by ToUpperRequest.ValidateAll() if the designated constraints
+// aren't met.
+type ToUpperRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ToUpperRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ToUpperRequestMultiError) AllErrors() []error { return m }
 
 // ToUpperRequestValidationError is the validation error returned by
 // ToUpperRequest.Validate if the designated constraints aren't met.
@@ -109,17 +149,51 @@ var _ interface {
 } = ToUpperRequestValidationError{}
 
 // Validate checks the field values on ToUpperResponse with the rules defined
-// in the proto definition for this message. If any rules are violated, an
-// error is returned.
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
 func (m *ToUpperResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ToUpperResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ToUpperResponseMultiError, or nil if none found.
+func (m *ToUpperResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ToUpperResponse) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
 
+	var errors []error
+
 	// no validation rules for S
 
+	if len(errors) > 0 {
+		return ToUpperResponseMultiError(errors)
+	}
 	return nil
 }
+
+// ToUpperResponseMultiError is an error wrapping multiple validation errors
+// returned by ToUpperResponse.ValidateAll() if the designated constraints
+// aren't met.
+type ToUpperResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ToUpperResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ToUpperResponseMultiError) AllErrors() []error { return m }
 
 // ToUpperResponseValidationError is the validation error returned by
 // ToUpperResponse.Validate if the designated constraints aren't met.
@@ -176,13 +250,46 @@ var _ interface {
 } = ToUpperResponseValidationError{}
 
 // Validate checks the field values on NoopMsg with the rules defined in the
-// proto definition for this message. If any rules are violated, an error is returned.
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
 func (m *NoopMsg) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on NoopMsg with the rules defined in the
+// proto definition for this message. If any rules are violated, the result is
+// a list of violation errors wrapped in NoopMsgMultiError, or nil if none found.
+func (m *NoopMsg) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *NoopMsg) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
 
-	if v, ok := interface{}(m.GetF()).(interface{ Validate() error }); ok {
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetF()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, NoopMsgValidationError{
+					field:  "F",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, NoopMsgValidationError{
+					field:  "F",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetF()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
 			return NoopMsgValidationError{
 				field:  "F",
@@ -192,8 +299,27 @@ func (m *NoopMsg) Validate() error {
 		}
 	}
 
+	if len(errors) > 0 {
+		return NoopMsgMultiError(errors)
+	}
 	return nil
 }
+
+// NoopMsgMultiError is an error wrapping multiple validation errors returned
+// by NoopMsg.ValidateAll() if the designated constraints aren't met.
+type NoopMsgMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m NoopMsgMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m NoopMsgMultiError) AllErrors() []error { return m }
 
 // NoopMsgValidationError is the validation error returned by NoopMsg.Validate
 // if the designated constraints aren't met.

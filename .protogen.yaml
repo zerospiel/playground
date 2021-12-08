@@ -1,9 +1,0 @@
-# - gitlab.ozon.ru/pay/processing/cards/src/Api/proto/cards_v2.proto
-external_dependencies: []
-proto_paths: []
-project_repo: github.com/zerospiel/playground
-ignore_dirs:
-  - vendor
-  - vendor.pb
-  - vendor.pv
-lang: golang
