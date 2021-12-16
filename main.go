@@ -18,6 +18,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/minio/minio-go/v7"
 	mcredentials "github.com/minio/minio-go/v7/pkg/credentials"
+	"github.com/ryboe/q"
 	generatedv1 "github.com/zerospiel/playground/gen/go/pg/v1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -52,10 +53,40 @@ func (*sss) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+func map2slices[T comparable, V any](m map[T]V) ([]T, []V) {
+	ks, vs := make([]T, 0, len(m)), make([]V, 0, len(m))
+	for k, v := range m {
+		ks, vs = append(ks, k), append(vs, v)
+	}
+	return ks, vs
+}
+
+type nestedT struct {
+	intptr *int64
+	sptr   *(struct {
+		name     string
+		lastname string
+	})
+}
+
 func main() {
 
 	// minioCall()
 	// awsCall()
+
+	m := map[int32]nestedT{
+		0: {aws.Int64(100500), &struct {
+			name     string
+			lastname string
+		}{"name_foo", "lastname_bar"}},
+		1: {aws.Int64(100501), &struct {
+			name     string
+			lastname string
+		}{"name_bar", "lastname_baz"}},
+	}
+	ks, vs := map2slices(m)
+	fmt.Println(ks, vs)
+	q.Q(ks, vs) // DEBUG
 
 	return
 
