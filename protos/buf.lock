@@ -6,12 +6,8 @@ deps:
     repository: protoc-gen-validate
     branch: main
     commit: dc09a417d27241f7b069feae2cd74a0e
-    digest: b1-Ml8P8Frdpw3OwpExAAPdylRY3Drdoz0lwMe104zLBEk=
-    create_time: 2021-12-17T23:06:23.975454Z
   - remote: buf.build
     owner: googleapis
     repository: googleapis
     branch: main
-    commit: 3acb5846ac62425ea63964d3a02db72f
-    digest: b1-H-YZn4iL6Z89CPrbe2RMpz3xiQuiA-uXRRvOS-4-03g=
-    create_time: 2021-12-18T15:02:51.352987Z
+    commit: c21d9ee7a8c74d6a8cce1338a2839547
