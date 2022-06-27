@@ -1,13 +1,14 @@
 package main
 
 import (
+	"fmt"
 	"os"
+	"runtime"
 	"runtime/trace"
 )
 
 func main() {
-
-	return
+	fmt.Printf("runtime.Version(): %v\n", runtime.Version())
 }
 
 func getTrace() {

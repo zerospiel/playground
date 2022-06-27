@@ -5,6 +5,7 @@
 !README
 !Makefile
 !Dockerfile
+!Containerfile
 .vscode
 vendor/
 dist/
