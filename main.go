@@ -1,14 +1,20 @@
 package main
 
 import (
-	"fmt"
 	"os"
-	"runtime"
 	"runtime/trace"
+
+	"golang.org/x/exp/constraints"
 )
 
 func main() {
-	fmt.Printf("runtime.Version(): %v\n", runtime.Version())
+}
+
+func min[T constraints.Ordered](a, b T) T {
+	if a < b {
+		return a
+	}
+	return b
 }
 
 func getTrace() {

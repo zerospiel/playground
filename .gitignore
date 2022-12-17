@@ -11,3 +11,6 @@ vendor/
 dist/
 *.swp
 *.cover
+
+go.work
+go.work.sum
