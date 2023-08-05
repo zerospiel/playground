@@ -68,7 +68,7 @@ func main() {
 	/***** Initialize manual resolver and Dial *****/
 	r := manual.NewBuilderWithScheme("ozon")
 	resolver.Register(r)
-	defer resolver.UnregisterForTesting("ozon")
+	// defer resolver.UnregisterForTesting("ozon")
 	// Set up a connection to the server.
 	conn, err := grpc.Dial(
 		r.Scheme()+":///test.server",

@@ -43,9 +43,7 @@ func _() {
 	rand.Seed(time.Now().UnixNano())
 }
 
-var (
-	ports = []string{":10001", ":10002", ":10003"}
-)
+var ports = []string{":10001", ":10002", ":10003"}
 
 // server is used to implement helloworld.GreeterServer.
 type server struct {
@@ -85,7 +83,8 @@ func main() {
 	}
 	defer adminListener.Close()
 
-	s := grpc.NewServer(grpc.WithUnaryInterceptor(nil))
+	// s := grpc.NewServer(grpc.WithUnaryInterceptor(nil))
+	s := grpc.NewServer(grpc.UnaryInterceptor(nil))
 	// service.RegisterChannelzServiceToServer(s)
 	reflection.Register(s)
 	go s.Serve(lis)

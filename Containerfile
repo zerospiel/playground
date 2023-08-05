@@ -1,4 +1,4 @@
-FROM golang:1.19beta1 as builder
+FROM golang:latest as builder
 
 WORKDIR /app
 
