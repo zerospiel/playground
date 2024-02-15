@@ -3,13 +3,34 @@ package main
 import (
 	"cmp"
 	"fmt"
+	"iter"
 	"os"
 	"runtime/trace"
+	"strconv"
 )
 
 func main() {
-	m := map[string]float64{"1": 1., "2": 2., "0.2": .2}
-	fmt.Printf("M2S[[]float64](m): %v\n", M2S[[]float64](m))
+}
+
+func FooIter[E any](s []E) iter.Seq2[int, E] {
+	defer func() {
+		println("immediately after the evaluation of the for loop")
+	}()
+	return func(yield func(int, E) bool) {
+		defer func() {
+			if rc := recover(); rc != nil {
+				fmt.Println("panic:", rc)
+			}
+		}()
+		for i := 0; i < len(s); i++ {
+			defer func() {
+				println("iter #" + strconv.Itoa(i))
+			}()
+			if !yield(i, s[i]) {
+				return
+			}
+		}
+	}
 }
 
 func M2S[S ~[]V, M ~map[K]V, K comparable, V cmp.Ordered](m M) S {
