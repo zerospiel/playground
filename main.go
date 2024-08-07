@@ -4,12 +4,44 @@ import (
 	"cmp"
 	"fmt"
 	"iter"
+	"maps"
 	"os"
 	"runtime/trace"
+	"slices"
 	"strconv"
 )
 
+func panicIter() {
+	defer func() {
+		if p := recover(); p != nil {
+			println("main panic:", p)
+			panic(p)
+		}
+	}()
+
+	next, _ := iter.Pull(func(yield func(V any) bool) {
+		yield("hello")
+		panic("world")
+	})
+
+	for {
+		fmt.Println(next())
+	}
+}
+
 func main() {
+	const cnt = 20
+	m := make(map[int]struct{}, cnt)
+	for i := range cnt {
+		m[i] = struct{}{}
+	}
+
+	keys := maps.Keys(m)
+	sortedKeys := slices.Sorted(keys)
+	unsortedKeys := slices.AppendSeq([]int(nil), keys)
+	fmt.Printf("sorted: %v; unsorted: %v\n", sortedKeys, unsortedKeys)
+
+	panicIter()
 }
 
 func FooIter[E any](s []E) iter.Seq2[int, E] {
