@@ -11,6 +11,20 @@ import (
 	"strconv"
 )
 
+// type foo struct {
+// 	_ structs.HostLayout
+// }
+
+type Tree[K cmp.Ordered, V any] struct {
+	left, right *Tree[K, V]
+	key         K
+	value       V
+}
+
+type TreeInt = Tree[int, any]
+
+// type TreeIntStr[K int, V string] = Tree[K, V] // made-up dummy example, GOEXPERIMENT=aliastypeparams
+
 func panicIter() {
 	defer func() {
 		if p := recover(); p != nil {
@@ -38,7 +52,7 @@ func main() {
 
 	keys := maps.Keys(m)
 	sortedKeys := slices.Sorted(keys)
-	unsortedKeys := slices.AppendSeq([]int(nil), keys)
+	unsortedKeys := slices.Collect(keys)
 	fmt.Printf("sorted: %v; unsorted: %v\n", sortedKeys, unsortedKeys)
 
 	panicIter()
