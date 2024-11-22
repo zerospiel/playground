@@ -55,7 +55,7 @@ func main() {
 	unsortedKeys := slices.Collect(keys)
 	fmt.Printf("sorted: %v; unsorted: %v\n", sortedKeys, unsortedKeys)
 
-	panicIter()
+	// panicIter()
 }
 
 func FooIter[E any](s []E) iter.Seq2[int, E] {
