@@ -10,7 +10,7 @@ require (
 	golang.org/x/net v0.31.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20241118233622-e639e219e697
 	google.golang.org/grpc v1.68.0
-	google.golang.org/grpc/examples v0.0.0-20241122184640-93f1cc163b21
+	google.golang.org/grpc/examples v0.0.0-20241126230844-4c07bca27377
 	google.golang.org/protobuf v1.35.2
 )
 
