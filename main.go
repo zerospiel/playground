@@ -2,6 +2,8 @@ package main
 
 import (
 	"cmp"
+	_ "embed"
+	"encoding/json"
 	"fmt"
 	"hash/maphash"
 	"iter"
@@ -88,6 +90,25 @@ func wp() {
 
 	ptr = wp.Value()
 	println("value after gc:", ptr)
+}
+
+type TZero struct {
+	A myInt `json:"a,omitzero"`
+}
+
+type myInt int
+
+func (t myInt) IsZero() bool {
+	return t < 1
+}
+
+func ejson() {
+	t := &TZero{A: -1}
+	bb, err := json.Marshal(t)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("string(bb): %v\n", string(bb))
 }
 
 func main() {
