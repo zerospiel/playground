@@ -23,7 +23,7 @@ type Tree[K cmp.Ordered, V any] struct {
 
 type TreeInt = Tree[int, any]
 
-// type TreeIntStr[K int, V string] = Tree[K, V] // made-up dummy example, GOEXPERIMENT=aliastypeparams
+type TreeIntStr[K int, V string] = Tree[K, V] // made-up dummy example, GOEXPERIMENT=aliastypeparams
 
 func panicIter() {
 	defer func() {
@@ -43,7 +43,7 @@ func panicIter() {
 	}
 }
 
-func main() {
+func sort() {
 	const cnt = 20
 	m := make(map[int]struct{}, cnt)
 	for i := range cnt {
@@ -54,8 +54,9 @@ func main() {
 	sortedKeys := slices.Sorted(keys)
 	unsortedKeys := slices.Collect(keys)
 	fmt.Printf("sorted: %v; unsorted: %v\n", sortedKeys, unsortedKeys)
+}
 
-	// panicIter()
+func main() {
 }
 
 func FooIter[E any](s []E) iter.Seq2[int, E] {

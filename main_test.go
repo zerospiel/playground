@@ -55,7 +55,7 @@ func BenchmarkFilter(b *testing.B) {
 	m := getMap(Nm)
 	b.ResetTimer()
 	b.ReportAllocs()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = LongStrings(m, Nc)
 	}
 }
@@ -64,7 +64,7 @@ func BenchmarkSimple(b *testing.B) {
 	m := getMap(Nm)
 	b.ResetTimer()
 	b.ReportAllocs()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = LongStringsSimple(m, Nc)
 	}
 }
