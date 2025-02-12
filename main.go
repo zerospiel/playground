@@ -3,12 +3,16 @@ package main
 import (
 	"cmp"
 	"fmt"
+	"hash/maphash"
 	"iter"
 	"maps"
 	"os"
+	"runtime"
 	"runtime/trace"
 	"slices"
 	"strconv"
+	"unique"
+	"weak"
 )
 
 // type foo struct {
@@ -23,7 +27,7 @@ type Tree[K cmp.Ordered, V any] struct {
 
 type TreeInt = Tree[int, any]
 
-type TreeIntStr[K int, V string] = Tree[K, V] // made-up dummy example, GOEXPERIMENT=aliastypeparams
+type TreeIntStr[K int, V comparable] = Tree[K, V] // made-up dummy example, GOEXPERIMENT=aliastypeparams
 
 func panicIter() {
 	defer func() {
@@ -54,6 +58,36 @@ func sort() {
 	sortedKeys := slices.Sorted(keys)
 	unsortedKeys := slices.Collect(keys)
 	fmt.Printf("sorted: %v; unsorted: %v\n", sortedKeys, unsortedKeys)
+}
+
+func mhash() {
+	s := maphash.MakeSeed()
+	v1, v2 := unique.Make(100), unique.Make(101)
+	h1 := maphash.Comparable(s, v1)
+	h2 := maphash.Comparable(s, v2)
+	fmt.Printf("h1: %v\n", h1)
+	fmt.Printf("h2: %v\n", h2)
+	fmt.Printf("(h1 == h2): %v\n", (h1 == h2))
+	v3, v4 := 100, 100
+	h1, h2 = maphash.Comparable(s, v3), maphash.Comparable(s, v4)
+	fmt.Printf("h1: %v\n", h1)
+	fmt.Printf("h2: %v\n", h2)
+	fmt.Printf("(h1 == h2): %v\n", (h1 == h2))
+}
+
+func wp() {
+	s := new(string)
+	println("original:", s)
+
+	wp := weak.Make(s)
+	runtime.GC() // wp underlaying ptr still needed bc of the next println usage
+
+	ptr := wp.Value()
+	println("value before gc:", ptr, s)
+	runtime.GC()
+
+	ptr = wp.Value()
+	println("value after gc:", ptr)
 }
 
 func main() {

@@ -2,7 +2,10 @@ module github.com/zerospiel/playground
 
 go 1.25
 
-godebug default=go1.24
+godebug (
+	default=go1.24
+	fips140=on
+)
 
 require (
 	github.com/envoyproxy/protoc-gen-validate v1.2.1
