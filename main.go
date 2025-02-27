@@ -49,7 +49,7 @@ func panicIter() {
 	}
 }
 
-func sort() {
+func sortfn() {
 	const cnt = 20
 	m := make(map[int]struct{}, cnt)
 	for i := range cnt {
