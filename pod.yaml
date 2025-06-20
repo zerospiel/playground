@@ -2,7 +2,11 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: playground
+  namespace: default
 spec:
   containers:
   - name: playground
-    image: localhost:5001/playground
+    # image: localhost:5001/playground
+    image: ubuntu:latest
+    command: ["/bin/bash", "-ec", "apt update && apt install -y curl; while :; do sleep 30 ; done"]
+  restartPolicy: Never
