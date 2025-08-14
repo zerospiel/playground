@@ -1,9 +1,9 @@
 module github.com/zerospiel/playground
 
-go 1.25
+go 1.26
 
 godebug (
-	default=go1.24
+	default=go1.25
 	fips140=on
 )
 
