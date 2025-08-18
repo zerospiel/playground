@@ -4,6 +4,7 @@ import (
 	"cmp"
 	_ "embed"
 	"encoding/json"
+	jsonv2 "encoding/json/v2"
 	"fmt"
 	"hash/maphash"
 	"iter"
@@ -108,6 +109,25 @@ func ejson() {
 	if err != nil {
 		panic(err)
 	}
+	fmt.Printf("string(bb): %v\n", string(bb))
+}
+
+func ejsonv2() {
+	boolMarshaler := jsonv2.MarshalFunc(
+		func(val bool) ([]byte, error) {
+			if val {
+				return []byte(`"✅"`), nil
+			}
+			return []byte(`"🔪"`), nil
+		},
+	)
+
+	val := false
+	bb, err := jsonv2.Marshal(val, jsonv2.WithMarshalers(boolMarshaler))
+	if err != nil {
+		panic(err)
+	}
+
 	fmt.Printf("string(bb): %v\n", string(bb))
 }
 

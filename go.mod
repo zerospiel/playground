@@ -5,6 +5,7 @@ go 1.26
 godebug (
 	default=go1.25
 	fips140=on
+	checkfinalizers=1
 )
 
 require (
