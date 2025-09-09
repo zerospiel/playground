@@ -1,16 +1,1 @@
-*
-!*.*
-!*/
-!LICENSE
-!README
-!Makefile
-!Dockerfile
-!Containerfile
-.vscode
-vendor/
-dist/
-*.swp
-*.cover
-
-go.work
-go.work.sum
+!.vim

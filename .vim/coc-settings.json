@@ -1,0 +1,15 @@
+{
+    "languageserver": {
+        "golang": {
+            "command": "gopls",
+            "filetypes": [
+                "go"
+            ],
+            "env": {
+                "PATH": "${env:GOPATH}/src/github.com/zerospiel/playground/.bin:${env:PATH}",
+                "GOROOT": "${env:HOME}/sdk/gotip",
+                "GOEXPERIMENT": "synctest,jsonv2"
+            }
+        }
+    }
+}
