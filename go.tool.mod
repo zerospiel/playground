@@ -1,6 +1,6 @@
 module github.com/zerospiel/playground
 
-go 1.26
+go 1.27
 
 tool google.golang.org/grpc/cmd/protoc-gen-go-grpc
 
