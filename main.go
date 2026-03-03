@@ -1,7 +1,9 @@
 package main
 
 import (
+	// _ "simd/archsimd"
 	"cmp"
+	"context"
 	_ "embed"
 	"encoding/json"
 	jsonv2 "encoding/json/v2"
@@ -9,11 +11,17 @@ import (
 	"hash/maphash"
 	"iter"
 	"maps"
+	"net/netip"
 	"os"
+	"os/signal"
 	"runtime"
+	"runtime/pprof"
 	"runtime/trace"
 	"slices"
 	"strconv"
+	"strings"
+	"syscall"
+	"time"
 	"unique"
 	"weak"
 )
@@ -132,6 +140,85 @@ func ejsonv2() {
 }
 
 func main() {
+}
+
+func newexpr() {
+	pi, ps, pf := new(42), new([]string{"42"}), new(func() { _ = 42 })
+
+	fmt.Printf("newexpr type: %T; %T; %T\n", pi, ps, pf)
+}
+
+func cidrComp() {
+	cidr1 := netip.MustParsePrefix("10.0.0.0/16")
+	cidr2 := netip.MustParsePrefix("10.0.0.0/15")
+	fmt.Printf("cidr1: %v\n", cidr1)
+	fmt.Printf("cidr2: %v\n", cidr2)
+	fmt.Printf("cidr1.Compare(cidr2): %v\n", cidr1.Compare(cidr2))
+}
+
+func signalCause() {
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
+
+	p, _ := os.FindProcess(os.Getpid())
+	_ = p.Signal(syscall.SIGINT)
+
+	<-ctx.Done()
+	fmt.Println("err =", ctx.Err())
+	fmt.Println("cause =", context.Cause(ctx))
+}
+
+func recTypes() {
+	type Ordered[T Ordered[T]] interface {
+		Less(T) bool
+	}
+	type Tree[T Ordered[T]] struct {
+		nodes []T
+	}
+
+	t := Tree[netip.Addr]{}
+	_ = t
+}
+
+func leakProfile() {
+	gather := func(funcs ...func() int) <-chan int {
+		out := make(chan int)
+		for _, f := range funcs {
+			go func() {
+				out <- f()
+			}()
+		}
+		return out
+	}
+
+	printLeaks := func(f func()) {
+		if !strings.Contains(os.Getenv("GOEXPERIMENT"), "goroutineleakprofile") {
+			panic("set GOEXPERIMENT=goroutineleakprofile")
+		}
+
+		prof := pprof.Lookup("goroutineleak")
+
+		defer func() {
+			time.Sleep(50 * time.Millisecond)
+			var content strings.Builder
+			prof.WriteTo(&content, 2)
+			// Print only the leaked goroutines.
+			for goro := range strings.SplitSeq(content.String(), "\n\n") {
+				if strings.Contains(goro, "(leaked)") {
+					fmt.Println(goro + "\n")
+				}
+			}
+		}()
+
+		f()
+	}
+	printLeaks(func() {
+		gather(
+			func() int { return 11 },
+			func() int { return 22 },
+			func() int { return 33 },
+		)
+	})
 }
 
 func FooIter[E any](s []E) iter.Seq2[int, E] {
