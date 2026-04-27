@@ -8,7 +8,7 @@
             "env": {
                 "PATH": "${env:GOPATH}/src/github.com/zerospiel/playground/.bin:${env:PATH}",
                 "GOROOT": "${env:HOME}/sdk/gotip",
-                "GOEXPERIMENT": "jsonv2"
+                "GOEXPERIMENT": "goroutineleakprofile,jsonv2"
             }
         }
     }
