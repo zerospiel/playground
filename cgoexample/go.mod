@@ -1,3 +1,3 @@
 module github.com/zerospiel/playground/cgoexample
 
-go 1.27
+go 1.28
