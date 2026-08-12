@@ -17,16 +17,159 @@ import (
 	"runtime"
 	"runtime/pprof"
 	"runtime/trace"
+
+	// "simd" // GOEXPERIMENT=simd
 	"slices"
 	"strconv"
 	"strings"
 	"syscall"
 	"time"
 	"unique"
+	"uuid"
 	"weak"
 )
 
 func main() {
+}
+
+// 1.27
+
+// generic methods
+
+type Box[T any] struct{ v T }
+
+func (b Box[T]) Map[U any](f func(T) U) Box[U] {
+	return Box[U]{v: f(b.v)}
+}
+
+func genericMethod() {
+	b := Box[int]{v: 21}
+	doubled := b.Map(func(n int) int { return n * 2 })
+	label := doubled.Map(func(n int) string {
+		return fmt.Sprintf("value=%d", n)
+	})
+	fmt.Println(label.v)
+}
+
+// struct literal field selectors
+
+func structLiteralFieldSelectors() {
+	type (
+		Base struct {
+			ID int
+		}
+
+		User struct {
+			Name string
+			Base
+		}
+	)
+
+	u := User{ID: 7, Name: "Mittens"}
+	fmt.Println(u.ID, u.Name)
+}
+
+// generalized function type inference
+
+func first[T any](s []T) T { return s[0] }
+func last[T any](s []T) T  { return s[len(s)-1] }
+func fnTypeInference() {
+	// The slice's element type drives inference: T=int for each entry.
+	// Before Go 1.27 this failed with "cannot use generic function
+	// without instantiation"; you had to write first[int], last[int].
+	ops := []func([]int) int{first, last}
+	for _, op := range ops {
+		fmt.Println(op([]int{10, 20, 30}))
+	}
+}
+
+// labels in tracebacks
+
+func labeledTracebacks() {
+	ctx := context.Background()
+	pprof.Do(ctx, pprof.Labels("request", "42"), func(ctx context.Context) {
+		buf := make([]byte, 1<<12)
+		n := runtime.Stack(buf, false)
+		fmt.Printf("%s", buf[:n])
+	})
+}
+
+// goroutineleak profile graduated
+
+func leakProfileGraduated() {
+	leak := func() {
+		ch := make(chan int)
+		ch <- 1
+	}
+
+	go leak()
+
+	runtime.Gosched()
+
+	// The GC-backed scan finds goroutines that can never make progress.
+	pprof.Lookup("goroutineleak").WriteTo(os.Stdout, 1)
+}
+
+// uuid pkg
+
+func uuidPkg() {
+	a := uuid.MustParse("f81d4fae-7dec-11d0-a765-00a0c91e6bf6")
+	fmt.Println("parsed:", a)
+	fmt.Println("nil:   ", uuid.Nil())
+	fmt.Println("max:   ", uuid.Max())
+	fmt.Println(uuid.NewV4()) // random
+	fmt.Println(uuid.NewV7()) // time-ordered
+}
+
+// non-fixed (size-agnostic) SIMD
+
+// func sizeAgnosticSIMD() {
+// 	a := []float32{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}
+// 	b := []float32{10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160}
+
+// 	va := simd.LoadFloat32s(a) // reads exactly va.Len() lanes from a
+// 	vb := simd.LoadFloat32s(b)
+
+// 	sum := va.Add(vb) // element-wise add, many lanes in one instruction
+
+// 	out := make([]float32, sum.Len())
+// 	sum.Store(out)
+
+// 	fmt.Println("simd:", out)
+// }
+
+// cutLast
+
+func cutLast() {
+	before, after, found := strings.CutLast("a/b/c", "/")
+	fmt.Printf("%q %q %v\n", before, after, found)
+
+	before, after, found = strings.CutLast("nosep", "/")
+	fmt.Printf("%q %q %v\n", before, after, found)
+}
+
+// generic hash
+
+type ciHasher struct{}
+
+// Equal ignores case; Hash mixes in the lower-cased form, so values
+// that are Equal always hash the same.
+func (ciHasher) Hash(h *maphash.Hash, s string) { h.WriteString(strings.ToLower(s)) }
+func (ciHasher) Equal(x, y string) bool         { return strings.EqualFold(x, y) }
+
+func genericHash() {
+	var h maphash.Hasher[string] = ciHasher{} // plug in the custom strategy
+
+	fmt.Println("generic hash pure equal:", h.Equal("Go", "GO"), h.Equal("Go", "Rust"))
+
+	// Equal values must hash the same, so feed each into a Hash sharing one seed:
+	seed := maphash.MakeSeed()
+	var a, b maphash.Hash
+	a.SetSeed(seed)
+	b.SetSeed(seed)
+	h.Hash(&a, "Go")
+	h.Hash(&b, "GO")
+	fmt.Println("generic hash sums equality:", a.Sum64() == b.Sum64())
 }
 
 // 1.26
@@ -81,9 +224,10 @@ func leakProfile() {
 	}
 
 	printLeaks := func(f func()) {
-		if !strings.Contains(os.Getenv("GOEXPERIMENT"), "goroutineleakprofile") {
-			panic("set GOEXPERIMENT=goroutineleakprofile")
-		}
+		// not required since 1.27
+		// if !strings.Contains(os.Getenv("GOEXPERIMENT"), "goroutineleakprofile") {
+		// 	panic("set GOEXPERIMENT=goroutineleakprofile")
+		// }
 
 		prof := pprof.Lookup("goroutineleak")
 
@@ -113,9 +257,10 @@ func leakProfile() {
 // 1.25
 
 func callJsonv2() {
-	if !strings.Contains(os.Getenv("GOEXPERIMENT"), "jsonv2") {
-		panic("set GOEXPERIMENT=jsonv2")
-	}
+	// not required since 1.27
+	// if !strings.Contains(os.Getenv("GOEXPERIMENT"), "jsonv2") {
+	// 	panic("set GOEXPERIMENT=jsonv2")
+	// }
 
 	boolMarshaler := jsonv2.MarshalFunc(
 		func(val bool) ([]byte, error) {
